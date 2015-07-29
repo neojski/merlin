@@ -68,6 +68,8 @@ and item = {
 
 type is_tail_position = [`No | `Tail_position | `Tail_call]
 
+type context = [`ML | `MLI | `Auto ] * string option * string list option
+
 type _ request =
   | Tell
     : [ `Start of position option | `Source of string | `File of string | `Eof | `Marker]
@@ -118,7 +120,7 @@ type _ request =
     :  [`Prev|`Next|`Current] * position
     -> Location.t option request
   | Reset
-    :  [`ML | `MLI | `Auto ] * string option * string list option
+    :  context
     -> cursor_state request
   | Refresh
     :  unit request
@@ -171,6 +173,7 @@ type _ request =
     : string request
 
 type a_request = Request : 'a request -> a_request
+               | Context_request : context * 'a request -> a_request
 
 type response =
   | Return    : 'a request * 'a -> response
