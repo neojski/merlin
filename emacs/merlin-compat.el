@@ -11,10 +11,12 @@
 
 (defalias 'merlin--completion-bounds      'merlin/completion-bounds)
 (defalias 'merlin--buffer-substring       'merlin/buffer-substring)
-(defalias 'merlin-sync-to-point           'merlin/sync-to-point)
 (defalias 'merlin--completion-split-ident 'merlin/completion-split-ident)
 (defalias 'merlin--completion-data        'merlin/complete)
 (defalias 'merlin--completion-prefix      'merlin/completion-prefix)
+
+(defun merlin-sync-to-point (&rest ignored)
+  (merlin/sync))
 
 (defun merlin-refresh ()
   "Deprecated. Was used to reload cmis, this is handled automatically by merlin now."
