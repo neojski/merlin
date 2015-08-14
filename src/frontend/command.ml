@@ -463,6 +463,119 @@ let dispatch (state : state) =
     | otherwise -> otherwise
     end
 
+  | (Jump (target, pos) : a request) ->
+    with_typer state @@ fun typer ->
+
+    let typed_tree = Typer.contents typer in
+    let roots = Browse.of_typer_contents typed_tree in
+    let enclosings = Browse.enclosing pos roots in
+
+    let is_node_fun = function
+      | { BrowseT.t_node = BrowseT.Expression { Typedtree.exp_desc = Typedtree.Texp_function _; _ } } -> true
+      | _ -> false
+    in
+    let is_node_let = function
+      | { BrowseT.t_node = BrowseT.Value_binding _ } -> true
+      | _ -> false
+    in
+    let is_node_pattern = function
+      | { BrowseT.t_node = BrowseT.Case _ } -> true
+      | _ -> false
+    in
+    let fun_pred = fun all ->
+      (* For:
+         `let f x y z = ...` jump to f
+         For
+         `let f = fun x -> fun y -> fun z -> ...` jump to f
+         For
+         `List.map l ~f:(fun x -> ...)` jump to fun
+
+         Every fun is immediately followed by pattern in the typed tree.
+         Invariant: head is a fun.
+       *)
+      let rec normalize_fun = function
+        (* fun pat fun something *)
+        | node1 :: node2 :: node3 :: tail when is_node_fun node3 ->
+          assert (is_node_fun node1);
+          assert (is_node_pattern node2);
+          normalize_fun (node3 :: tail)
+        (* fun let something *)
+        | node1 :: node2 :: tail when is_node_let node2 ->
+          assert (is_node_fun node1);
+          node2
+        | node :: tail ->
+          assert (is_node_fun node);
+          node
+        | _ ->
+          assert false
+      in
+      match all with
+      | node :: tail when is_node_fun node -> Some (normalize_fun all)
+      | _ -> None
+    in
+    let let_pred = function
+      | node :: tail when is_node_let node -> Some node
+      | _ -> None
+    in
+    let module_pred = function
+      | ({ BrowseT.t_node = BrowseT.Module_binding _} as node) :: tail -> Some node
+      | _ -> None
+    in
+    let match_pred = function
+      | ({ BrowseT.t_node =
+            BrowseT.Expression { Typedtree.exp_desc =
+                                   Typedtree.Texp_match _}} as node) :: tail -> Some node
+      | _ -> None
+    in
+    let all_preds = [
+      "fun", fun_pred;
+      "let", let_pred;
+      "module", module_pred;
+      "match", match_pred;
+    ] in
+    let targets = Str.split (Str.regexp ",") target in
+    let preds =
+      List.map targets ~f:(fun target ->
+        match List.find_some all_preds ~f:(fun (name, _) -> name = target) with
+        | Some (name, f) -> f
+        | None -> failwith ("No predicate for: " ^ target)
+      )
+    in
+    let rec find_map ~f = function
+      | [] -> None
+      | head :: tail ->
+        match f head with
+        | Some v -> Some v
+        | None -> find_map tail ~f
+    in
+    let rec find_node = function
+      | [] -> failwith "No matching target found"
+      | (node :: tail) as all ->
+        match find_map preds ~f:(fun pred -> pred all) with
+        | Some node -> node
+        | None -> find_node tail
+    in
+    (* Skip all nodes that won't advance cursor's position *)
+    let rec skip_non_moving = function
+      | (node :: tail) as all ->
+        let loc_start = node.BrowseT.t_loc.Location.loc_start in
+        if pos.Lexing.pos_lnum = loc_start.Lexing.pos_lnum then
+          skip_non_moving tail
+        else
+          all
+      | [] -> []
+    in
+    begin
+      try
+        if String.length target = 0 then
+          `Error "Specify target"
+        else begin
+          let node = find_node (skip_non_moving enclosings) in
+          `Found node.BrowseT.t_loc.Location.loc_start
+        end
+      with exn ->
+        `Error (Printexc.to_string exn)
+    end
   | (Case_analysis ({ Location. loc_start ; loc_end } as loc) : a request) ->
     with_typer state @@ fun typer ->
     let env = Typer.env typer in
