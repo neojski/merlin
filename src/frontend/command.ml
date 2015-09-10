@@ -478,6 +478,81 @@ let dispatch (state : state) =
       | { BrowseT.t_node = BrowseT.Value_binding _ } -> true
       | _ -> false
     in
+
+    let expr = function
+      | Typedtree.Texp_ident (_,_,_) -> "Texp_ident"
+      | Typedtree.Texp_constant _ -> "Texp_constant"
+      | Typedtree.Texp_let (_,_,_) -> "Texp_let"
+      | Typedtree.Texp_function (_,_,_) -> "Texp_function"
+      | Typedtree.Texp_apply (_,_) -> "Texp_apply"
+      | Typedtree.Texp_match (_,_,_,_) -> "Texp_match"
+      | Typedtree.Texp_try (_,_) -> "Texp_try"
+      | Typedtree.Texp_tuple _ -> "Texp_tuple"
+      | Typedtree.Texp_construct (_,_,_) -> "Texp_construct"
+      | Typedtree.Texp_variant (_,_) -> "Texp_variant"
+      | Typedtree.Texp_record (_,_) -> "Texp_record"
+      | Typedtree.Texp_field (_,_,_) -> "Texp_field"
+      | Typedtree.Texp_setfield (_,_,_,_) -> "Texp_setfield"
+      | Typedtree.Texp_array _ -> "Texp_array"
+      | Typedtree.Texp_ifthenelse (_,_,_) -> "Texp_ifthenelse"
+      | Typedtree.Texp_sequence (_,_) -> "Texp_sequence"
+      | Typedtree.Texp_while (_,_) -> "Texp_while"
+      | Typedtree.Texp_for (_,_,_,_,_,_) -> "Texp_for"
+      | Typedtree.Texp_send (_,_,_) -> "Texp_send"
+      | Typedtree.Texp_new (_,_,_) -> "Texp_new"
+      | Typedtree.Texp_instvar (_,_,_) -> "Texp_instvar"
+      | Typedtree.Texp_setinstvar (_,_,_,_) -> "Texp_setinstvar"
+      | Typedtree.Texp_override (_,_) -> "Texp_override"
+      | Typedtree.Texp_letmodule (_,_,_,_) -> "Texp_letmodule"
+      | Typedtree.Texp_assert _ -> "Texp_assert"
+      | Typedtree.Texp_lazy _ -> "Texp_lazy"
+      | Typedtree.Texp_object (_,_) -> "Texp_object"
+      | Typedtree.Texp_pack _ -> "Texp_pack"
+    in
+    let xxx = function
+      | { BrowseT.t_node = BrowseT.Case _ } -> "Case"
+      | { BrowseT.t_node = BrowseT.Dummy ; t_loc; t_env; t_children } -> "Dummy"
+      | { BrowseT.t_node = BrowseT.Expression { exp_desc; exp_loc; exp_extra; exp_type; exp_env; exp_attributes }; t_loc; t_env; t_children } -> "Expression(" ^ (expr exp_desc) ^ ")"
+      | { BrowseT.t_node = BrowseT.Pattern _; t_loc; t_env; t_children } -> "Pattern"
+      | { BrowseT.t_node = BrowseT.Class_expr { cl_desc; cl_loc; cl_type; cl_env; cl_attributes }; t_loc; t_env; t_children } -> "Class_expr"
+      | { BrowseT.t_node = BrowseT.Class_structure _; t_loc; t_env; t_children } -> "Class_structure"
+      | { BrowseT.t_node = BrowseT.Class_field _; t_loc; t_env; t_children } -> "Class_field"
+      | { BrowseT.t_node = BrowseT.Class_field_kind _; t_loc; t_env; t_children } -> "Class_field_kind"
+      | { BrowseT.t_node = BrowseT.Module_expr _; t_loc; t_env; t_children } -> "Module_expr"
+      | { BrowseT.t_node = BrowseT.Module_type_constraint _; t_loc; t_env; t_children } -> "Module_type_constraint"
+      | { BrowseT.t_node = BrowseT.Structure _; t_loc; t_env; t_children } -> "Structure"
+      | { BrowseT.t_node = BrowseT.Structure_item _; t_loc; t_env; t_children } -> "Structure_item"
+      | { BrowseT.t_node = BrowseT.Module_binding _; t_loc; t_env; t_children } -> "Module_binding"
+      | { BrowseT.t_node = BrowseT.Value_binding _; t_loc; t_env; t_children } -> "Value_binding"
+      | { BrowseT.t_node = BrowseT.Module_type _; t_loc; t_env; t_children } -> "Module_type"
+      | { BrowseT.t_node = BrowseT.Signature _; t_loc; t_env; t_children } -> "Signature"
+      | { BrowseT.t_node = BrowseT.Signature_item _; t_loc; t_env; t_children } -> "Signature_item"
+      | { BrowseT.t_node = BrowseT.Module_declaration _; t_loc; t_env; t_children } -> "Module_declaration"
+      | { BrowseT.t_node = BrowseT.Module_type_declaration _; t_loc; t_env; t_children } -> "Module_type_declaration"
+      | { BrowseT.t_node = BrowseT.With_constraint _; t_loc; t_env; t_children } -> "With_constraint"
+      | { BrowseT.t_node = BrowseT.Core_type _; t_loc; t_env; t_children } -> "Core_type"
+      | { BrowseT.t_node = BrowseT.Package_type _; t_loc; t_env; t_children } -> "Package_type"
+      | { BrowseT.t_node = BrowseT.Row_field _; t_loc; t_env; t_children } -> "Row_field"
+      | { BrowseT.t_node = BrowseT.Value_description _; t_loc; t_env; t_children } -> "Value_description"
+      | { BrowseT.t_node = BrowseT.Type_declaration _; t_loc; t_env; t_children } -> "Type_declaration"
+      | { BrowseT.t_node = BrowseT.Type_kind _; t_loc; t_env; t_children } -> "Type_kind"
+      | { BrowseT.t_node = BrowseT.Type_extension _; t_loc; t_env; t_children } -> "Type_extension"
+      | { BrowseT.t_node = BrowseT.Extension_constructor _; t_loc; t_env; t_children } -> "Extension_constructor"
+      | { BrowseT.t_node = BrowseT.Label_declaration _; t_loc; t_env; t_children } -> "Label_declaration"
+      | { BrowseT.t_node = BrowseT.Constructor_declaration _; t_loc; t_env; t_children } -> "Constructor_declaration"
+      | { BrowseT.t_node = BrowseT.Class_type _; t_loc; t_env; t_children } -> "Class_type"
+      | { BrowseT.t_node = BrowseT.Class_signature _; t_loc; t_env; t_children } -> "Class_signature"
+      | { BrowseT.t_node = BrowseT.Class_type_field _; t_loc; t_env; t_children } -> "Class_type_field"
+      | { BrowseT.t_node = BrowseT.Class_declaration _; t_loc; t_env; t_children } -> "Class_declaration"
+      | { BrowseT.t_node = BrowseT.Class_description _; t_loc; t_env; t_children } -> "Class_description"
+      | { BrowseT.t_node = BrowseT.Class_type_declaration _; t_loc; t_env; t_children } -> "Class_type_declaration"
+      | { BrowseT.t_node = BrowseT.Method_call (_,_); t_loc; t_env; t_children } -> "Method_call"
+      | { BrowseT.t_node = BrowseT.Module_binding_name _; t_loc; t_env; t_children } -> "Module_binding_name"
+      | { BrowseT.t_node = BrowseT.Module_declaration_name _; t_loc; t_env; t_children } -> "Module_declaration_name"
+      | { BrowseT.t_node = BrowseT.Module_type_declaration_name _; t_loc; t_env; t_children } -> "Module_type_declaration_name"
+    in
+
+
     let is_node_pattern = function
       | { BrowseT.t_node = BrowseT.Case _ } -> true
       | _ -> false
@@ -565,8 +640,15 @@ let dispatch (state : state) =
           all
       | [] -> []
     in
+
+
     begin
       try
+        List.iter enclosings ~f:(fun node ->
+            Printf.eprintf "%s\n%!" (xxx node)
+        );
+        Printf.eprintf "---\n%!";
+
         if String.length target = 0 then
           `Error "Specify target"
         else begin
@@ -583,6 +665,8 @@ let dispatch (state : state) =
     let structures = Typer.contents typer in
     let structures = Browse.of_typer_contents structures in
     let enclosings = Browse.enclosing loc_start structures in
+
+
     begin match
         List.drop_while enclosings ~f:(fun t ->
             Lexing.compare_pos t.BrowseT.t_loc.Location.loc_end loc_end < 0
